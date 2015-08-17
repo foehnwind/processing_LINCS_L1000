@@ -3,20 +3,21 @@ function [ expmArr ] = getChdir_2( arr,lmIdx )
 %   Detailed explanation goes here
 
 % check if ctl_vehicle is the only one
-ctrlIdx = cellfun(@(x)strcmp(x.pert_type,'ctl_vehicle'), arr, 'UniformOutput',false);
+ctrlIdx = cellfun(@(x)strcmp(x.SM_Pert_Type,'ctl_vehicle'), arr, 'UniformOutput',false);
 ctrlIdx = [ctrlIdx{:}];
 expmIdx = ~ctrlIdx;
 
 ctrlArr = arr(ctrlIdx);
-ctrlMat = cellfun(@(x)x.data, ctrlArr, 'UniformOutput',false);
+ctrlMat = cellfun(@(x)x.vector', ctrlArr, 'UniformOutput',false);
 ctrlMat = [ctrlMat{:}];
 expmArr = arr(expmIdx);
 
 ctrlLmMat = ctrlMat(lmIdx,:);
+dists = squareform(pdist(ctrlLmMat'));
+avgDist = sum(dists)/(numel(ctrlArr)-1);
+ctrlOutlierIdx = outlier(avgDist,0.01);
 
-% % remove outlier in a multivariate way
-ctrlOutlierIdx = moutlier1(ctrlLmMat',0.05);
-% ctrlMat(:,ctrlOutlierIdx) = [];
+ctrlMat(:,ctrlOutlierIdx) = [];
 ctrlLmMat(:,ctrlOutlierIdx) = [];
 if ~isempty(ctrlOutlierIdx)
 disp('Number of removed outliers in Control:');
@@ -26,7 +27,7 @@ end
 disp('begin calculate chdir');
 totalCount = numel(expmArr);
 parfor i = 1:totalCount
-    expmVector = expmArr{i}.data;
+    expmVector = expmArr{i}.vector';
     expmLmVector = expmVector(lmIdx);
     
     [~,rmIdxLm] = removeConstantGenes(ctrlLmMat);

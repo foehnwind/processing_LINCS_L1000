@@ -1,17 +1,16 @@
 import com.mongodb.BasicDBObject;
 import java.util.regex.Pattern;
 import com.mongodb.util.JSON;
-[readColl,db,client] = getdbcoll('LINCS_L1000','meta2014');
-writeColl = db.getCollection('cpc2014');
+[readColl,db,client] = getdbcoll('LINCS_L1000_LJP2015','data');
+writeColl = db.getCollection('CD');
 
-filter = BasicDBObject();
-filter.append('det_plate',Pattern.compile('CPC'));
-batches = readColl.distinct('batch',filter);
+% filter = BasicDBObject();
+% filter.append('det_plate',Pattern.compile('CPC'));
+batches = readColl.distinct('batch');
 batches = j2m(batches);
 
-bigMatPath = 'D:\Qiaonan backup\LINCS data\newData\q2norm_n1328098x22268.gctx';
 load('D:\Qiaonan backup\LINCS data\newData\id2gene');
-load('D:\Qiaonan backup\LINCS data\newData\newMatRid');
+load('D:\Qiaonan backup\LINCS data\newData\2015\LJP59Rid');
 geneSymbols = cell(22268,1);
 lmIdx = false(22268,1);
 for i = 1:numel(rid)
@@ -19,7 +18,8 @@ for i = 1:numel(rid)
     lmIdx(i) = dict(rid{i}).islm;
 end
 %%
-for i = 243:numel(batches)
+
+for i = 53:-1:33
     batch = batches{i};
     fprintf('%s %d\n',batch,i);
     filter = BasicDBObject();
@@ -40,24 +40,17 @@ for i = 243:numel(batches)
         query.append('det_plate',plate);
         cursor = readColl.find(query);
         arr = cell(cursor.count,1);
-        cids = cell(cursor.count,1);
         for k = 1:cursor.count
             arr{k} = j2m(cursor.next());
-            cids{k} = arr{k}.distil_id;
         end
-        t = parse_gctx(bigMatPath,'cid',cids);
-        % t.cid matches the order of cids
-        for k = 1:numel(cids)
-            arr{k}.data = t.mat(:,k);
-        end
-     
         plateRes = getChdir_2(arr,lmIdx);
         platesRes{j} = plateRes';
     end
     toc
     
-    % get unique experiments' sig_ids.
-    jsonQuery = sprintf('[{$match:{batch:"%s",pert_type:{$ne:"ctl_vehicle"}}},{$group:{_id:{"batch":"$batch","pert_id":"$pert_id","pert_dose":"$pert_dose"},replicateCount:{$sum:1}}}]',batch);
+    % get unique experiments' sig_ids. Make sure ctl_vehicle is the only
+    % denomination of ctrl replicates. Refer to Main-linux.m
+    jsonQuery = sprintf('[{$match:{batch:"%s",SM_Pert_Type:{$ne:"ctl_vehicle"}}},{$group:{_id:{"batch":"$batch","pert_id":"$SM_LINCS_ID","pert_dose":"$SM_Dose"},replicateCount:{$sum:1}}}]',batch);
     aggregateOutput = readColl.aggregate(JSON.parse(jsonQuery));
     sigIdStructs = j2m(aggregateOutput.results());
     
