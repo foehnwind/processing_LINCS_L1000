@@ -14,14 +14,17 @@ expmArr = arr(expmIdx);
 
 ctrlLmMat = ctrlMat(lmIdx,:);
 
-% % remove outlier in a multivariate way
-ctrlOutlierIdx = moutlier1(ctrlLmMat',0.05);
-% ctrlMat(:,ctrlOutlierIdx) = [];
+dists = squareform(pdist(ctrlLmMat'));
+avgDist = sum(dists)/(numel(ctrlArr)-1);
+ctrlOutlierIdx = outlier(avgDist,0.01);
+
+ctrlMat(:,ctrlOutlierIdx) = [];
 ctrlLmMat(:,ctrlOutlierIdx) = [];
 if ~isempty(ctrlOutlierIdx)
 disp('Number of removed outliers in Control:');
 disp(numel(ctrlOutlierIdx));
 end
+
 
 disp('begin calculate chdir');
 totalCount = numel(expmArr);

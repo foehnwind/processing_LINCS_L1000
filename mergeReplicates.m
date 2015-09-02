@@ -36,16 +36,15 @@ chdirs = cell(numel(sigIdStructs),1);
 
 for i = 1:numel(sigIdStructs)
     sigIdStruct = sigIdStructs{i};
-    chdir = sigIdStruct.x0x5F_id;
+    chdir = sigIdStruct;
     chdir.replicateCount = sigIdStruct.replicateCount;
     if sigIdStruct.replicateCount==1
-        chdirReplicate = dict(chdirStructsAllPlates,@(x)strcmp(x.pert_id,sigIdStruct.x0x5F_id.pert_id)&&strcmp(x.pert_dose,sigIdStruct.x0x5F_id.pert_dose));
+        chdirReplicate = dict(chdirStructsAllPlates,@(x)strcmp(x.distil_id,sigIdStruct.distil_id{1}));
         chdir.chdirLm = chdirReplicate.chdirLm';
         chdir.chdirFull = chdirReplicate.chdir';
         chdirs{i} = addFields(chdir,chdirReplicate);
     else
-        chdirReplicates = dict(chdirStructsAllPlates,@(x)strcmp(x.pert_id,sigIdStruct.x0x5F_id.pert_id)&&strcmp(x.pert_dose,sigIdStruct.x0x5F_id.pert_dose));
-        
+        chdirReplicates = dict(chdirStructsAllPlates,@(x)any(strcmp(x.distil_id,sigIdStruct.distil_id)));
         chdirVectorsLm = cellfun(@(x)x.chdirLm,chdirReplicates,'UniformOutput',false);
         chdirVectorsLm = [chdirVectorsLm{:}];
         meanChdirVectorLm = mean(chdirVectorsLm,2);
@@ -83,7 +82,10 @@ for i = 1:numel(sigIdStructs)
         
         % now intersection is sorted by meanSortIdx order.
         intersectionMemberIdx =  ismember(meanSortIdx(1:diffCount), intersection);
-        chdir.sigIdx = meanSortIdx(intersectionMemberIdx)';
+        sigIdx = meanSortIdx(intersectionMemberIdx)';
+        if numel(sigIdx) > 0
+            chdir.sigIdx = sigIdx;
+        end
         
         chdirs{i} = addFields(chdir,chdirReplicates{1});
     end

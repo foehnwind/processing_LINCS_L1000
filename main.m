@@ -1,10 +1,16 @@
 import com.mongodb.BasicDBObject;
 import java.util.regex.Pattern;
 import com.mongodb.util.JSON;
-[readColl,db,client] = getdbcoll('LINCS_L1000','meta2014');
-writeColl = db.getCollection('cpc2014');
+import com.mongodb.MongoClient;
+mongoClient = MongoClient('10.91.53.225',27017);
+db = mongoClient.getDB('LINCS_L1000');
+readColl = db.getCollection('meta2014');
+writeColl = db.getCollection('cpcd-v1.2');
+sigDB = mongoClient.getDB('LINCS_L1000_limma');
+sigColl = sigDB.getCollection('siginfo');
 
 filter = BasicDBObject();
+% filter only CPC batch
 filter.append('det_plate',Pattern.compile('CPC'));
 batches = readColl.distinct('batch',filter);
 batches = j2m(batches);
@@ -19,7 +25,7 @@ for i = 1:numel(rid)
     lmIdx(i) = dict(rid{i}).islm;
 end
 %%
-for i = 243:numel(batches)
+for i = 1:numel(batches)
     batch = batches{i};
     fprintf('%s %d\n',batch,i);
     filter = BasicDBObject();
@@ -57,9 +63,18 @@ for i = 243:numel(batches)
     toc
     
     % get unique experiments' sig_ids.
-    jsonQuery = sprintf('[{$match:{batch:"%s",pert_type:{$ne:"ctl_vehicle"}}},{$group:{_id:{"batch":"$batch","pert_id":"$pert_id","pert_dose":"$pert_dose"},replicateCount:{$sum:1}}}]',batch);
-    aggregateOutput = readColl.aggregate(JSON.parse(jsonQuery));
-    sigIdStructs = j2m(aggregateOutput.results());
+    query = BasicDBObject();
+    query.append('sig_id',Pattern.compile(batch));
+    query.append('brew_prefix',batch);
+    sub = BasicDBObject();
+    sub.append('$ne','ctl_vehicle');
+    query.append('pert_type',sub);
+    jsonProjection = sprintf('{_id:0,sig_id:1,distil_id:1,pert_mfc_id:1}');
+    cursor = sigColl.find(query,JSON.parse(jsonProjection));
+    sigIdStructs = cell(cursor.count,1);
+    for sigIdx = 1:cursor.count
+        sigIdStructs{sigIdx} = j2m(cursor.next());
+    end
     
     % merge chdir replicates and computeSignficance
     chdirArr = mergeReplicates(platesRes,sigIdStructs);
