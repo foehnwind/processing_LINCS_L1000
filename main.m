@@ -50,7 +50,7 @@ for i = 53:-1:33
     
     % get unique experiments' sig_ids. Make sure ctl_vehicle is the only
     % denomination of ctrl replicates. Refer to Main-linux.m
-    jsonQuery = sprintf('[{$match:{batch:"%s",SM_Pert_Type:{$ne:"ctl_vehicle"}}},{$group:{_id:{"batch":"$batch","pert_id":"$SM_LINCS_ID","pert_dose":"$SM_Dose"},replicateCount:{$sum:1}}}]',batch);
+    jsonQuery = sprintf('[{$match:{batch:"%s",SM_Pert_Type:{$ne:"ctl_vehicle"}}},{$group:{_id:{"batch":"$batch","pert_id":"$SM_Center_Compound_ID","pert_dose":"$SM_Dose"},replicateCount:{$sum:1}}}]',batch);
     aggregateOutput = readColl.aggregate(JSON.parse(jsonQuery));
     sigIdStructs = j2m(aggregateOutput.results());
     

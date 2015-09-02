@@ -39,12 +39,12 @@ for i = 1:numel(sigIdStructs)
     chdir = sigIdStruct.x0x5F_id;
     chdir.replicateCount = sigIdStruct.replicateCount;
     if sigIdStruct.replicateCount==1
-        chdirReplicate = dict(chdirStructsAllPlates,@(x)strcmp(x.SM_LINCS_ID,sigIdStruct.x0x5F_id.pert_id)&&(x.SM_Dose==sigIdStruct.x0x5F_id.pert_dose));
+        chdirReplicate = dict(chdirStructsAllPlates,@(x)strcmp(x.SM_Center_Compound_ID,sigIdStruct.x0x5F_id.pert_id)&&(x.SM_Dose==sigIdStruct.x0x5F_id.pert_dose));
         chdir.chdirLm = chdirReplicate.chdirLm';
         chdir.chdirFull = chdirReplicate.chdir';
         chdirs{i} = addFields(chdir,chdirReplicate);
     else
-        chdirReplicates = dict(chdirStructsAllPlates,@(x)strcmp(x.SM_LINCS_ID,sigIdStruct.x0x5F_id.pert_id)&&(x.SM_Dose==sigIdStruct.x0x5F_id.pert_dose));
+        chdirReplicates = dict(chdirStructsAllPlates,@(x)strcmp(x.SM_Center_Compound_ID,sigIdStruct.x0x5F_id.pert_id)&&(x.SM_Dose==sigIdStruct.x0x5F_id.pert_dose));
         assert(numel(chdirReplicates)==sigIdStruct.replicateCount);
         chdirVectorsLm = cellfun(@(x)x.chdirLm,chdirReplicates,'UniformOutput',false);
         chdirVectorsLm = [chdirVectorsLm{:}];
