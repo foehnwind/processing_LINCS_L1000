@@ -27,6 +27,9 @@ for i = 1:numel(repCountUnique)
         nullRps(:,j) = rp;
     end
     eval(sprintf('res.rp%d = nullRps(:);',currentRepCount));
+    eval(sprintf('res.rpm%d = nullRps;',currentRepCount));
+
+end
 end
 
 

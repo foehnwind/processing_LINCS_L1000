@@ -11,7 +11,7 @@ sigColl = sigDB.getCollection('siginfo');
 
 filter = BasicDBObject();
 % filter only CPC batch
-filter.append('det_plate',Pattern.compile('CPC'));
+filter.append('det_plate',Pattern.compile('CPD'));
 batches = readColl.distinct('batch',filter);
 batches = j2m(batches);
 
@@ -25,7 +25,7 @@ for i = 1:numel(rid)
     lmIdx(i) = dict(rid{i}).islm;
 end
 %%
-for i = 1:numel(batches)
+for i = 21:numel(batches)
     batch = batches{i};
     fprintf('%s %d\n',batch,i);
     filter = BasicDBObject();

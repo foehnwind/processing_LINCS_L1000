@@ -2,7 +2,6 @@ function [chdir] = addFields(chdir,proto)
     chdir.batch = proto.batch;
     chdir.pert_id = proto.pert_id;
     chdir.pert_dose = proto.pert_dose;
-    chdir.sig_id = strjoin({proto.batch,proto.pert_id,proto.pert_dose},':');
     
     if isfield(proto,'pert_desc')
         chdir.pert_desc = proto.pert_desc;

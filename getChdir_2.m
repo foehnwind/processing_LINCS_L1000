@@ -14,7 +14,7 @@ expmArr = arr(expmIdx);
 
 ctrlLmMat = ctrlMat(lmIdx,:);
 
-dists = squareform(pdist(ctrlLmMat'));
+dists = squareform(pdist(ctrlLmMat','cosine'));
 avgDist = sum(dists)/(numel(ctrlArr)-1);
 ctrlOutlierIdx = outlier(avgDist,0.01);
 
@@ -31,6 +31,7 @@ totalCount = numel(expmArr);
 parfor i = 1:totalCount
     expmVector = expmArr{i}.data;
     expmLmVector = expmVector(lmIdx);
+    
     
     [~,rmIdxLm] = removeConstantGenes(ctrlLmMat);
     ctrlLmMatCleaned = ctrlLmMat;

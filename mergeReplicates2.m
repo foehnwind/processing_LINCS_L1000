@@ -33,9 +33,11 @@ end
 
 
 chdirs = cell(numel(sigIdStructs),1);
-% meanDists = NaN(numel(sigIdStructs),1);
+degCount = zeros(numel(sigIdStructs),1);
+meanDists = NaN(numel(sigIdStructs),1);
 
 for i = 1:numel(sigIdStructs)
+    disp(i);
     sigIdStruct = sigIdStructs{i};
     sigIdStruct.replicateCount = numel(sigIdStruct.distil_id);
     chdir = sigIdStruct;
@@ -54,38 +56,27 @@ for i = 1:numel(sigIdStructs)
         eval(sprintf('cosDistByRepCount = cosDistLm.repCount%d;',chdir.replicateCount));
         chdir.pvalue = distribution2pval(cosDistByRepCount,chdirMeanDistLm);
         chdir.chdirMeanDistLm = chdirMeanDistLm;
-%         meanDists(i) = chdirMeanDistLm;
+        meanDists(i) = chdirMeanDistLm;
         
          % meanChdirFull criterion
         chdirVectorsFull = cellfun(@(x)x.chdir,chdirReplicates,'UniformOutput',false);
         chdirVectorsFull = [chdirVectorsFull{:}];
         meanChdirVectorFull = mean(chdirVectorsFull,2);
         chdir.chdirFull = (meanChdirVectorFull/norm(meanChdirVectorFull))';
-        [~,meanSortIdx] = sort(meanChdirVectorFull.^2,'descend');
         
-        % rp criterion
-        [~,sortIdx] = sort(chdirVectorsFull.^2,1,'descend');
-        [~,rank] = sort(sortIdx,1);
-        rp = prod(rank,2).^(1/size(rank,2));
-        [~,rpSortIdx] = sort(rp);
-        eval(sprintf('diffIdx = rp<=cosDistFull.rp%dcutoff;',sigIdStruct.replicateCount));
-        diffCount = sum(diffIdx);
+        [sortedCd2,sortIdx] = sort(chdir.chdirFull.^2,'descend');
+        cdCumsum = cumsum(sortedCd2);
+        p = zeros(1000,1);
+        for j = 1:1000
+            eachCumsum = cdCumsum(j);
+             eval(sprintf('p(j) = sum(cumsumsFull.cumsum%d(j,:)>=eachCumsum)/size(cumsumsFull.cumsum%d,2);',...
+                 chdir.replicateCount,chdir.replicateCount));
+        end
         
-        % equal sign criterion
-        allPosIdx = sum(chdirVectorsFull>=0,2)== sigIdStruct.replicateCount;
-        allNegIdx = sum(chdirVectorsFull<=0,2) == sigIdStruct.replicateCount;
-        sameSignIdx = allPosIdx | allNegIdx;
-        sameSignIdx = find(sameSignIdx);
-        
-        % intersection that meets all three criterions.
-        intersection = intersect(meanSortIdx(1:diffCount),rpSortIdx(1:diffCount));
-        intersection = intersect(intersection,sameSignIdx);
-        
-        % now intersection is sorted by meanSortIdx order.
-        intersectionMemberIdx =  ismember(meanSortIdx(1:diffCount), intersection);
-        sigIdx = meanSortIdx(intersectionMemberIdx)';
-        if numel(sigIdx) > 0
-            chdir.sigIdx = sigIdx;
+        [minP,minIdx] = min(p);
+        if minP <= 0.1
+            chdir.sigIdx = sortIdx(1:minIdx);
+            degCount(i) = minIdx;
         end
         
         chdirs{i} = addFields(chdir,chdirReplicates{1});
