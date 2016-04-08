@@ -2,10 +2,10 @@ import com.mongodb.BasicDBObject;
 import java.util.regex.Pattern;
 import com.mongodb.util.JSON;
 import com.mongodb.MongoClient;
-mongoClient = MongoClient('10.91.53.225',27017);
+mongoClient = MongoClient('azu',27017);
 db = mongoClient.getDB('LINCS_L1000');
 readColl = db.getCollection('meta2014');
-writeColl = db.getCollection('cpcd-v1.2');
+% writeColl = db.getCollection('cpcd-v1.2');
 sigDB = mongoClient.getDB('LINCS_L1000_limma');
 sigColl = sigDB.getCollection('siginfo');
 
@@ -27,6 +27,8 @@ end
 %%
 for i = 21:numel(batches)
     batch = batches{i};
+    
+    batch = 'CPC002_HA1E_6H';
     fprintf('%s %d\n',batch,i);
     filter = BasicDBObject();
     filter.append('det_plate',Pattern.compile(batch));

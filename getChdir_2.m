@@ -13,10 +13,10 @@ ctrlMat = [ctrlMat{:}];
 expmArr = arr(expmIdx);
 
 ctrlLmMat = ctrlMat(lmIdx,:);
-
-dists = squareform(pdist(ctrlLmMat','cosine'));
+dists = squareform(pdist(ctrlLmMat'));
 avgDist = sum(dists)/(numel(ctrlArr)-1);
 ctrlOutlierIdx = outlier(avgDist,0.01);
+
 
 ctrlMat(:,ctrlOutlierIdx) = [];
 ctrlLmMat(:,ctrlOutlierIdx) = [];
